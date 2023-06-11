@@ -51,11 +51,42 @@ app.get('/avgStudents', (req, res) => {
     avgGrades()
 })
 
-app.get('/addNewStudent', (req, res) => {
-    console.log(req.body)
-    res.send(req.body)
-    res.send('ok')
-})
+app.post('/addNewStudent', (req, res) => {
+    const checkStudent = async () => {
+
+        const findStudent = await studensList.findOne({ id: req.body.id });
+        if (findStudent) {
+            console.log("The id is registred")
+        }
+        else {
+            studensList.insertMany(req.body)
+        }
+
+    };
+
+    checkStudent();
+    res.send('ok');
+});
+
+app.put('/addNewAvg', async (req, res) => {
+
+    // Поиск студента по заданному id и обновление поля avgGrades
+    const updatedStudent = await studensList.findOneAndUpdate(
+        { id: req.body.id }, // Фильтр для поиска студента по id
+        { $set: { avgGrades: req.body.avgGrades } }, // Обновление поля avgGrades
+        { new: true } // Опция, чтобы вернуть обновленный объект студента
+    );
+
+    if (updatedStudent) {
+        // Если студент найден и обновление прошло успешно
+        res.send('Средний балл студента обновлен');
+    } else {
+        // Если студент не найден
+        res.status(404).send('Студент не найден');
+    }
+
+});
+
 
 
 app.listen('3000', () => {
